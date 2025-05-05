@@ -1,7 +1,9 @@
 <footer>
     <div class="footer-content">
         <div class="footer-column">
-            <img src="assets/images/logo/main-logo-white.png" height="40" width="120" alt="">
+            <a href="{{ route(name: 'home') }}">
+            <img src="{{asset('web_assets/frontend/images/logo/main-logo-white.png')}}" height="40" width="120" alt="">
+            </a>
             <h3>Information</h3>
             <p>Love OCR is AI-Based Optical Character Recognition (OCR) software which extract text from images and
                 convert into .txt or docx format.</p>
