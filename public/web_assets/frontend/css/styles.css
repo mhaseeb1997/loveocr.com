@@ -632,3 +632,40 @@ footer {
 
 
 
+/* Add to your CSS file */
+.upload-area.active {
+    border-color: #4CAF50;
+    background-color: #f8fff8;
+}
+
+#ocrText {
+    padding: 15px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    font-family: inherit;
+    resize: vertical;
+}
+
+#submitBtn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#submitBtn:hover {
+    background-color: #45a049;
+}
+
+#submitBtn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}

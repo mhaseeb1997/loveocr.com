@@ -72,3 +72,48 @@
         uploadArea.classList.remove('active');
     });
 </script>
+<script>
+    const submitBtn = document.getElementById('submitBtn');
+    const ocrText = document.getElementById('ocrText');
+    submitBtn.addEventListener('click', function() {
+        if (!fileInput.files || fileInput.files.length === 0) {
+            alert('Please select a file first');
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Converting...';
+        ocrText.value = 'Processing...';
+
+        const formData = new FormData();
+        formData.append('files', fileInput.files[0]);
+
+        fetch('https://loveocr.com/python_api/ocr/api/ocr', {
+                method: 'POST',
+                body: formData,
+                redirect: 'follow'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Convert';
+
+                if (data.status === 'completed' && data.results && data.results.length > 0) {
+                    ocrText.value = data.results[0].text;
+                } else {
+                    ocrText.value = data.message || 'No text was extracted or an error occurred.';
+                }
+            })
+            .catch(error => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Convert';
+                ocrText.value = 'Error: ' + error.message;
+                console.error('OCR API Error:', error);
+            });
+    });
+</script>

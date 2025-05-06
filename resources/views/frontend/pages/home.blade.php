@@ -20,7 +20,11 @@
                 <span class="remove-file" id="removeFile">✕</span>
             </div>
         </section>
+        <button id="submitBtn" class="">Convert</button>
 
+        <div class="result-area">
+            <textarea id="ocrText" placeholder="Result will be appear here..." rows="6"  style="width: 100%; margin-top: 20px;"></textarea>
+        </div>
         <!--========================
            How It Works Section
         ========================= -->
