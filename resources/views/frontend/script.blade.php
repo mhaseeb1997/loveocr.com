@@ -1,3 +1,5 @@
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 <script>
     // Toggle mobile navigation
     const navToggle = document.querySelector('.nav-toggle');
@@ -71,49 +73,40 @@
         fileInfo.style.display = 'none';
         uploadArea.classList.remove('active');
     });
-</script>
-<script>
-    const submitBtn = document.getElementById('submitBtn');
-    const ocrText = document.getElementById('ocrText');
-    submitBtn.addEventListener('click', function() {
-        if (!fileInput.files || fileInput.files.length === 0) {
-            alert('Please select a file first');
-            return;
-        }
 
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Converting...';
-        ocrText.value = 'Processing...';
-
-        const formData = new FormData();
-        formData.append('files', fileInput.files[0]);
-
-        fetch('https://loveocr.com/python_api/ocr/api/ocr', {
-                method: 'POST',
-                body: formData,
-                redirect: 'follow'
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
+    // Submit via AJAX
+    $('#submitBtn').on('click', function (e) {
+        $('#ocrText').text('processing....');
+        $('#submitBtn').prop('disabled', true);
+        e.preventDefault();
+        let formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+        $.ajax({
+            url: '{{ route("image_to_text") }}',
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+                const ocrText = response.data.results[0].text;
+                $('#ocrText').text(ocrText);
+                $('#submitBtn').prop('disabled', false);
+            },
+            error: function (xhr) {
+                let errors = xhr.responseJSON?.errors;
+                let msg = 'Upload failed.';
+                if (errors) {
+                    msg = '<ul>';
+                    $.each(errors, function (key, val) {
+                        msg += '<li>' + val[0] + '</li>';
+                    });
+                    msg += '</ul>';
                 }
-                return response.json();
-            })
-            .then(data => {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Convert';
-
-                if (data.status === 'completed' && data.results && data.results.length > 0) {
-                    ocrText.value = data.results[0].text;
-                } else {
-                    ocrText.value = data.message || 'No text was extracted or an error occurred.';
-                }
-            })
-            .catch(error => {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Convert';
-                ocrText.value = 'Error: ' + error.message;
-                console.error('OCR API Error:', error);
-            });
+                $('#ocrText').html('<div style="color:red;">' + msg + '</div>');
+            }
+        });
     });
 </script>

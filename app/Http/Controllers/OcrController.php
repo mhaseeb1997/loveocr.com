@@ -4,77 +4,32 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 
-use GuzzleHttp\Client;
 class OcrController extends Controller
-{ 
-     public function index()
+{
+     public function image_to_text(Request $request)
     {
-        return view('ocr');
-    }
-
-    /**
-     * Proxy the OCR API request using cURL
-     */
-    public function proxyOcr(Request $request)
-    {
-        // Validate the uploaded file
         $request->validate([
-            'file' => 'required|file|max:10240', // Max 10MB
+            'file' => 'required|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:5120',
         ]);
-
-        try {
-            // Get the uploaded file
-            $file = $request->file('file');
-            
-            // Initialize cURL
-            $curl = curl_init();
-            
-            // Create a CURLFile object
-            $curlFile = new \CURLFile(
-                $file->getPathname(),
-                $file->getMimeType(),
-                $file->getClientOriginalName()
-            );
-            
-            // Setup cURL options
-            curl_setopt_array($curl, [
-                CURLOPT_URL => 'https://loveocr.com/python_api/ocr/api/ocr',
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_ENCODING => '',
-                CURLOPT_MAXREDIRS => 10,
-                CURLOPT_TIMEOUT => 30,
-                CURLOPT_FOLLOWLOCATION => true, // Follow redirects
-                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                CURLOPT_CUSTOMREQUEST => 'POST',
-                CURLOPT_POSTFIELDS => ['file' => $curlFile],
-                CURLOPT_HTTPHEADER => [
-                    'Accept: */*',
-                ],
-            ]);
-            
-            // Execute cURL request
-            $response = curl_exec($curl);
-            $error = curl_error($curl);
-            
-            // Close cURL
-            curl_close($curl);
-            
-            // Check for errors
-            if ($error) {
-                throw new \Exception("cURL Error: " . $error);
-            }
-            
-            // Return the API response
-            return response($response)->header('Content-Type', 'application/json');
-            
-        } catch (\Exception $e) {
-            // Return error response
+        $file = $request->file('file');
+        $response = Http::attach(
+            'files',
+            file_get_contents($file),
+            $file->getClientOriginalName()
+        )->post('https://loveocr.com/python_api/ocr/api/ocr');
+        if ($response->successful()) {
             return response()->json([
-                'status' => 'error',
-                'message' => 'API Error: ' . $e->getMessage()
-            ], 500);
+                'message' => 'OCR processed successfully',
+                'data' => $response->json()
+            ]);
         }
+        return response()->json([
+            'message' => 'OCR processing failed',
+            'error' => $response->body()
+        ], $response->status());
+
     }
+
+
 }
